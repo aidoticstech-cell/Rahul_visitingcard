@@ -4,7 +4,7 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-  /* Soft pointer glow + tilt on desktop */
+  /* Soft pointer glow + tilt on desktop only */
   if (card && canHover && !reduceMotion) {
     card.addEventListener("pointermove", (event) => {
       const rect = card.getBoundingClientRect();
@@ -23,7 +23,9 @@
     });
   }
 
-  /* Contact expand: hover desktop, tap mobile */
+  /* Desktop hover expand for non-address rows; mobile uses direct taps */
+  if (!canHover) return;
+
   const closeAllContacts = (except) => {
     contacts.forEach((item) => {
       if (item !== except) item.classList.remove("is-open");
@@ -31,33 +33,12 @@
   };
 
   contacts.forEach((item) => {
-    const link = item.querySelector(".contact__hit");
-
-    if (canHover) {
-      item.addEventListener("mouseenter", () => {
-        closeAllContacts(item);
-        item.classList.add("is-open");
-      });
-      item.addEventListener("mouseleave", () => {
-        item.classList.remove("is-open");
-      });
-      return;
-    }
-
-    /* Touch / coarse pointer: first tap expands, second tap follows link */
-    link.addEventListener("click", (event) => {
-      if (!item.classList.contains("is-open")) {
-        event.preventDefault();
-        closeAllContacts(item);
-        item.classList.add("is-open");
-      }
+    item.addEventListener("mouseenter", () => {
+      closeAllContacts(item);
+      item.classList.add("is-open");
+    });
+    item.addEventListener("mouseleave", () => {
+      item.classList.remove("is-open");
     });
   });
-
-  document.addEventListener("pointerdown", (event) => {
-    if (!event.target.closest("[data-expand]")) {
-      closeAllContacts();
-    }
-  });
 })();
-
